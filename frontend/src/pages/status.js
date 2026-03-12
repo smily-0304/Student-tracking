@@ -60,10 +60,10 @@ const handleStatus = async () => {
 };
 
 // Change 'studentName' to 'studentId'
-const handleStatusChange = (studentId, newStatus) => {
+const handleStatusChange = (id, newStatus) => {
   const updatedInfo = info.map((student) => {
     // Match based on a unique ID field from your database
-    if (student._id === studentId) { 
+    if (student.uniqueId === id) { 
       return { ...student, status: newStatus };
     }
     return student;
@@ -144,7 +144,7 @@ const handleStatusChange = (studentId, newStatus) => {
                     <td className="px-6 py-4 text-center">
                       <select
                         value={d.status}
-                        onChange={(e) => handleStatusChange(d.Name, e.target.value)}
+                        onChange={(e) => handleStatusChange(d.uniqueId, e.target.value)}
                         className={`text-xs font-bold py-1 px-3 rounded-lg border-0 ring-1 ring-inset focus:ring-2 ${
                           d.status === "Present" 
                             ? "bg-green-900/20 text-green-400 ring-green-500/30 focus:ring-green-500" 
