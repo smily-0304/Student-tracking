@@ -1,5 +1,6 @@
-import React from 'react';
-import {  UserPlus,  Users,  CalendarCheck,  PieChart,  ArrowRight, GraduationCap} from 'lucide-react'; 
+import React, { useEffect } from 'react'; // Added useEffect
+import axios from 'axios'; // Added axios
+import { UserPlus, Users, CalendarCheck, PieChart, ArrowRight, GraduationCap } from 'lucide-react'; 
 import { useNavigate } from 'react-router-dom';
 
 function classNames(...classes) {
@@ -8,6 +9,28 @@ function classNames(...classes) {
 
 export default function Homepage() {
   const navigate = useNavigate();
+
+  // --- KEEP-ALIVE LOGIC ---
+  useEffect(() => {
+    // This pings the backend immediately when the homepage loads
+    // It uses the /view endpoint just to trigger a response and wake Render up
+    const wakeUpServer = async () => {
+      try {
+        await axios.get('https://student-backend-fjoq.onrender.com/view');
+        console.log("✅ Render Backend Keep-Alive: Server is awake!");
+      } catch (error) {
+        console.log("⏳ Render Backend Keep-Alive: Server is waking up...");
+      }
+    };
+
+    wakeUpServer();
+
+    // Optional: Set up an interval to ping every 10 minutes while the tab is open
+    const interval = setInterval(wakeUpServer, 600000); 
+    
+    return () => clearInterval(interval); // Clean up on unmount
+  }, []);
+  // -------------------------
 
   return (
     <div className="relative isolate min-h-screen bg-gray-900 px-6 py-24 sm:py-32 lg:px-8">
@@ -37,7 +60,7 @@ export default function Homepage() {
         </p>
       </div>
 
-      {/* Main Grid - Directly Written Cards */}
+      {/* Main Grid */}
       <div className="mx-auto mt-16 grid max-w-lg grid-cols-1 items-stretch gap-y-6 sm:mt-20 sm:gap-y-0 lg:max-w-4xl lg:grid-cols-2 lg:gap-x-8">
         
         {/* Card 1: Student Info */}
@@ -71,7 +94,7 @@ export default function Homepage() {
           </div>
         </div>
 
-        {/* Card 2: Attendance Tracking (Featured) */}
+        {/* Card 2: Attendance Tracking */}
         <div className="relative bg-gray-800/50 border-indigo-500 shadow-indigo-500/20 rounded-3xl p-8 ring-1 transition-all duration-300 hover:scale-[1.02] sm:p-10 flex flex-col justify-between">
           <div>
             <div className="flex items-center justify-between mb-6">
