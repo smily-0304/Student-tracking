@@ -82,24 +82,28 @@ app.get('/report', async (req, res) => {
     const diffTime = Math.abs(end - start);
     const totalDaysInRange = Math.ceil(diffTime / (1000 * 60 * 60 * 24)) + 1;
 
-    // 1. Filter Students
+    // 1. Find the students first based on tech
     let studentFilter = {};
     if (tech && tech !== "") {
-      // Using a simpler regex or direct match to avoid filtering errors
-      studentFilter.Tech = { $regex: new RegExp(tech, "i") };
+      studentFilter.Tech = { $regex: new RegExp("^" + tech + "$", "i") };
     }
     const allStudents = await db.collection('details').find(studentFilter).toArray();
+    
+    // Get an array of all student names in this tech category
+    const studentNames = allStudents.map(s => s.Name);
 
-    // 2. Filter Attendance Status
-    let statusQuery = { date: { $gte: fromDate, $lte: toDate } };
-    // If tech is selected, we only want attendance entries marked for that tech
-    if (tech && tech !== "") {
-      statusQuery.technology = { $regex: new RegExp(tech, "i") };
-    }
+    // 2. Get attendance for these specific students in the date range
+    // We REMOVE the tech filter from the statusQuery because sometimes 
+    // the status collection might not have the 'technology' field saved correctly
+    let statusQuery = { 
+      date: { $gte: fromDate, $lte: toDate } 
+    };
 
     const attendanceData = await db.collection('status').aggregate([
       { $match: statusQuery },
       { $unwind: "$students" },
+      // Only count attendance for students that belong to the selected tech
+      { $match: { "students.name": { $in: studentNames } } }, 
       {
         $group: {
           _id: "$students.name",
@@ -110,7 +114,7 @@ app.get('/report', async (req, res) => {
       }
     ]).toArray();
 
-    // 3. Map Data (Crucial: Use Trim to prevent name mismatch)
+    // 3. Map the results
     const finalReport = allStudents.map(student => {
       const attendance = attendanceData.find(a => 
         a._id.trim().toLowerCase() === student.Name.trim().toLowerCase()
@@ -125,7 +129,7 @@ app.get('/report', async (req, res) => {
 
     res.status(200).json(finalReport);
   } catch (error) {
-    console.error(error);
+    console.error("Report Error:", error);
     res.status(500).send({ message: "Server Error" });
   }
 });
