@@ -8,7 +8,7 @@ const { MongoClient, ObjectId } = require('mongodb');
 app.use(cors({
     origin: [
         "https://student-tracking-frontend-h0dh.onrender.com", // Your Live Frontend
-        "http://localhost:4000"                               // For local testing
+        "http://localhost:3000"                               // For local testing
     ],
     methods: ["GET", "POST", "PUT", "DELETE"],
     credentials: true
@@ -74,50 +74,60 @@ app.post('/status', async (req, res) => {
 });
 
 app.get('/report', async (req, res) => {
-    try {
-        const { fromDate, toDate, tech } = req.query;
-        const start = new Date(fromDate);
-        const end = new Date(toDate);
-        const diffTime = Math.abs(end - start);
-        const totalDaysInRange = Math.ceil(diffTime / (1000 * 60 * 60 * 24)) + 1;
+  try {
+    const { fromDate, toDate, tech } = req.query;
 
-        let studentFilter = {};
-        if (tech && tech !== "") {
-            studentFilter.Tech = { $regex: new RegExp("^" + tech + "$", "i") };
-        }
-        const allStudents = await db.collection('details').find(studentFilter).toArray();
+    const start = new Date(fromDate);
+    const end = new Date(toDate);
+    const diffTime = Math.abs(end - start);
+    const totalDaysInRange = Math.ceil(diffTime / (1000 * 60 * 60 * 24)) + 1;
 
-        let statusQuery = { date: { $gte: fromDate, $lte: toDate } };
-        if (tech && tech !== "") {
-            statusQuery.technology = { $regex: new RegExp("^" + tech + "$", "i") };
-        }
-
-        const attendanceData = await db.collection('status').aggregate([
-            { $match: statusQuery },
-            { $unwind: "$students" },
-            {
-                $group: {
-                    _id: "$students.name",
-                    presentCount: {
-                        $sum: { $cond: [{ $eq: ["$students.status", "Present"] }, 1, 0] }
-                    }
-                }
-            }
-        ]).toArray();
-
-        const finalReport = allStudents.map(student => {
-            const attendance = attendanceData.find(a => a._id === student.Name);
-            return {
-                _id: student.Name,
-                presentDays: attendance ? attendance.presentCount : 0,
-                totalDays: totalDaysInRange
-            };
-        });
-
-        res.status(200).json(finalReport);
-    } catch (error) {
-        res.status(500).send({ message: "Server Error" });
+    // 1. Filter Students
+    let studentFilter = {};
+    if (tech && tech !== "") {
+      // Using a simpler regex or direct match to avoid filtering errors
+      studentFilter.Tech = { $regex: new RegExp(tech, "i") };
     }
+    const allStudents = await db.collection('details').find(studentFilter).toArray();
+
+    // 2. Filter Attendance Status
+    let statusQuery = { date: { $gte: fromDate, $lte: toDate } };
+    // If tech is selected, we only want attendance entries marked for that tech
+    if (tech && tech !== "") {
+      statusQuery.technology = { $regex: new RegExp(tech, "i") };
+    }
+
+    const attendanceData = await db.collection('status').aggregate([
+      { $match: statusQuery },
+      { $unwind: "$students" },
+      {
+        $group: {
+          _id: "$students.name",
+          presentCount: {
+            $sum: { $cond: [{ $eq: ["$students.status", "Present"] }, 1, 0] }
+          }
+        }
+      }
+    ]).toArray();
+
+    // 3. Map Data (Crucial: Use Trim to prevent name mismatch)
+    const finalReport = allStudents.map(student => {
+      const attendance = attendanceData.find(a => 
+        a._id.trim().toLowerCase() === student.Name.trim().toLowerCase()
+      );
+      
+      return {
+        _id: student.Name,
+        presentDays: attendance ? attendance.presentCount : 0,
+        totalDays: totalDaysInRange
+      };
+    });
+
+    res.status(200).json(finalReport);
+  } catch (error) {
+    console.error(error);
+    res.status(500).send({ message: "Server Error" });
+  }
 });
 
 const PORT = process.env.PORT || 4000;

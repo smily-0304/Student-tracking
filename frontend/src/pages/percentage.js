@@ -1,10 +1,10 @@
 import React, { useState } from "react";
 import axios from "axios";
-import { ArrowLeft, UserPlus } from 'lucide-react';
-import { useNavigate } from 'react-router-dom';
+import { ArrowLeft, UserPlus } from "lucide-react";
+import { useNavigate } from "react-router-dom";
 
 export default function Percentage() {
-   const navigate = useNavigate();
+  const navigate = useNavigate();
   const [filters, setFilters] = useState({
     fromDate: "",
     toDate: "",
@@ -15,10 +15,12 @@ export default function Percentage() {
   const handleFetch = async (e) => {
     e.preventDefault();
     try {
-     
-      const res = await axios.get("https://student-backend-fjoq.onrender.com/report", {
-        params: filters,
-      });
+      const res = await axios.get(
+        "https://student-backend-fjoq.onrender.com/report",
+        {
+          params: filters,
+        },
+      );
       setReportData(res.data);
     } catch (err) {
       console.error("Error fetching report", err);
@@ -27,15 +29,14 @@ export default function Percentage() {
 
   return (
     <div className="min-h-screen bg-gray-900 p-8 text-white">
-      
-       <div className="sm:mx-auto sm:w-full ">
-              <button 
-                onClick={() => navigate('/')}
-                className="flex items-center gap-2 text-indigo-400 hover:text-indigo-300 transition-colors mb-6"
-              >
-                <ArrowLeft size={20} /> Back to Dashboard
-              </button>
-              </div>
+      <div className="sm:mx-auto sm:w-full ">
+        <button
+          onClick={() => navigate("/")}
+          className="flex items-center gap-2 text-indigo-400 hover:text-indigo-300 transition-colors mb-6"
+        >
+          <ArrowLeft size={20} /> Back to Dashboard
+        </button>
+      </div>
       <div className="max-w-4xl mx-auto bg-gray-800 rounded-xl p-6 shadow-2xl">
         <h2 className="text-2xl font-bold text-indigo-400 mb-6">
           Attendance Percentage Report
@@ -63,12 +64,11 @@ export default function Percentage() {
             className="bg-gray-700 p-2 rounded border-0"
             onChange={(e) => setFilters({ ...filters, tech: e.target.value })}
           >
-            
             <option value="">All Tech</option>
             <option value="python">Python</option>
             <option value="java">Java</option>
             <option value="frontend">Frontend</option>
-            <option value='AI'>AI</option>
+            <option value="AI">AI</option>
           </select>
           <button
             type="submit"
@@ -116,12 +116,17 @@ export default function Percentage() {
                     <td className="px-6 py-4 text-right">
                       <span
                         className={`text-sm font-bold px-3 py-1 rounded-full ${
+                          item.totalDays > 0 &&
                           item.presentDays / item.totalDays >= 0.75
                             ? "bg-green-900/20 text-green-400"
                             : "bg-red-900/20 text-red-400"
                         }`}
                       >
-                        {((item.presentDays / item.totalDays) * 100).toFixed(0)}
+                        {item.totalDays > 0
+                          ? ((item.presentDays / item.totalDays) * 100).toFixed(
+                              0,
+                            )
+                          : 0}
                         %
                       </span>
                     </td>
