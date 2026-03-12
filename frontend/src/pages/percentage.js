@@ -20,7 +20,7 @@ export default function Percentage() {
         params: filters,
       });
       setReportData(res.data);
-    } catch (err) {t
+    } catch (err) {
       console.error("Error fetching report", err);
     }
   };
