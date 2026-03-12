@@ -16,11 +16,11 @@ export default function Percentage() {
     e.preventDefault();
     try {
      
-      const res = await axios.get("http://localhost:4000/report", {
+      const res = await axios.get("https://student-backend-fjoq.onrender.com/report", {
         params: filters,
       });
       setReportData(res.data);
-    } catch (err) {
+    } catch (err) {t
       console.error("Error fetching report", err);
     }
   };

@@ -21,7 +21,7 @@ const handleSubmit = async (e) => {
   const data = { Name: name, Number: number, EmailId: email, Tech: branch };
 
   try {
-    await axios.post('http://localhost:4000/add', data);
+    await axios.post('https://student-backend-fjoq.onrender.com/add', data);
     console.log("Success");
 
     // Keep the success state for 3 seconds, then reset

@@ -9,7 +9,7 @@ export default function ViewStudent() {
 
   useEffect(() => {
     axios
-      .get("http://localhost:4000/view")
+      .get("https://student-backend-fjoq.onrender.com/view")
       .then((res) => {
         setinfo(res.data);
       })
@@ -17,7 +17,7 @@ export default function ViewStudent() {
   }, []);
   const handleDelete = (id) => {
     axios
-      .delete(`http://localhost:4000/delete/${id}`)
+      .delete(`https://student-backend-fjoq.onrender.com/delete/${id}`)
       .then((res) => {
         console.log("Delete Successfully", res.data);
         setinfo((prevInfo) => prevInfo.filter((student) => student._id !== id));

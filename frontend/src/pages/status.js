@@ -11,7 +11,7 @@ function Status() {
   const [isSubmitted, setIsSubmitted] = useState(false);
 
 useEffect(() => {
-  axios.get('http://localhost:4000/view')
+  axios.get('https://student-backend-fjoq.onrender.com/view')
     .then(res => {
       const dataWithStatus = res.data.map((student, index) => ({
         ...student,
@@ -43,7 +43,7 @@ const handleStatus = async () => {
 
   try {
   
-    const response = await axios.post('http://localhost:4000/status', attendanceData);
+    const response = await axios.post('https://student-backend-fjoq.onrender.com/status', attendanceData);
     if (response.status === 200) {
      
       setIsSubmitted(true)
